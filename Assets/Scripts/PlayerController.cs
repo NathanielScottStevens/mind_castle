@@ -7,8 +7,12 @@ public class PlayerController : MonoBehaviour
     [Range(100f, 1000f)]
     public float mouseSensitivity = 500f;
 
+    public float gravity = -9.81f;
+    public float jumpHeight = 2.0f;
+
     private CharacterController controller;
     private float xRotation = 0f;
+    private Vector3 velocity;
 
     void Start()
     {
@@ -30,8 +34,23 @@ public class PlayerController : MonoBehaviour
         // Ensure Y position remains constant
         worldMove.y = 0;
 
-        // Move the player
-        controller.Move(worldMove);
+        // Handle gravity
+        if (controller.isGrounded && velocity.y < 0)
+        {
+            velocity.y = -2f; // Small value to ensure the player stays grounded
+        }
+
+        // Handle jumping
+        if (Input.GetButtonDown("Jump") && controller.isGrounded)
+        {
+            velocity.y = Mathf.Sqrt(jumpHeight * -2f * gravity);
+        }
+
+        // Apply gravity to the velocity
+        velocity.y += gravity * Time.deltaTime;
+
+        // Move the player including gravity
+        controller.Move(worldMove + velocity * Time.deltaTime);
 
         // Handle mouse look
         float mouseX = Input.GetAxis("Mouse X") * mouseSensitivity * Time.deltaTime;
